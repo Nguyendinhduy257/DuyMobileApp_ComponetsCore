@@ -1,8 +1,43 @@
 import React, {useState} from "react";
-import { StyleSheet,Text,View,Image,ScrollView,TextInput,Button,Alert } from "react-native";
+import { StyleSheet,Text,View,Image,ScrollView,TextInput,Button,Alert,Platform } from "react-native";
 export default function App() {
   const [phone_number, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
+  const hienThiThongBao = (tieuDe,noiDung) =>{
+    if(Platform.OS ==='web'){
+      //trên web dùng "window.alert"
+      window.alert(tieuDe + ": "+ noiDung);
+    }
+    else{
+      //trên điện thoại dùng "Alert.alert"
+      Alert.alert(tieuDe,noiDung);
+    }
+  }
+  const xuLyNhapLieu =() =>{
+    //bỏ qua khoảng trắng space
+    const phone=phone_number.trim();
+    const pass =password.trim();
+    if(!phone){
+      hienThiThongBao("Lỗi","Vui lòng nhấp số điện thoại");
+      return;
+    }
+    //SĐT của Việt nam yêu cầu 10 chữ số
+    if(phone.length <10){
+      hienThiThongBao("Lỗi","Số điện thoại không hợp lệ (cần ít nhất 10 chứ số)");
+      return;
+    }
+    if(!pass){
+      hienThiThongBao("Lỗi","Vui lòng nhập mật khẩu");
+      return;
+    }
+    //Mật khẩu cần ít nhất 6 ký tự
+    if(pass.length <6){
+      hienThiThongBao("Lỗi","Mật khẩu phải có ít nhất 6 ký tự");
+      return;
+    }
+    //nếu qua hết các bước trên:
+    hienThiThongBao("Thành công","Đăng nhập thành công");
+  };
   return(
       <ScrollView style={styles.container}
       contentContainerStyle={styles.scrollContent}>
@@ -23,7 +58,7 @@ export default function App() {
           onChangeText={setPassword}
         />
         <View style={styles.btnContainer}>
-          <Button title="Đăng nhập" onPress={() => Alert.alert("Đăng nhập bằng số điện thoại thành công!")} />
+          <Button title="Đăng nhập" onPress={xuLyNhapLieu}/>
         </View>
         </View>
       </ScrollView>
@@ -50,7 +85,7 @@ const styles = StyleSheet.create({
   input:{
     width:'100%',
     maxWidth: 400,
-    height: 50,
+    height: 60,
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 20,
@@ -66,7 +101,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     overflow: 'hidden',
   },
-// --- Style cho cái hộp (Card) bao quanh form ---
+// Style cho cái hộp (Card) bao quanh form 
   formContainer:{
     width: '90%',        
     maxWidth: 400,
