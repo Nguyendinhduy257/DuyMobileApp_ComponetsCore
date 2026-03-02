@@ -1,42 +1,73 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import { StyleSheet,Text,View,Image,ScrollView,TextInput,Button,Alert,Platform } from "react-native";
 export default function App() {
+  //sử dụng useState để tự động render lại giao diện khi có sự thay đổi dữ liệu
+  // việc render sẽ được thực hiện tại chính biến được gắn useState, ở đây là "phone_number" = "phone" và "password"= "pass"
   const [phone_number, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
-  const hienThiThongBao = (tieuDe,noiDung) =>{
+  const [errorMessage, setErrorMessage] = useState('');
+  //hàm hiển thị thông báo lỗi chữ màu đỏ khi nhập sai dữ liệu
+  //hàm thông báo lỗi dựa vào nền tảng (web hoặc điện thoại) để sử dụng phương thức hiển thị phù hợp
+  const hienThiThongBao = (tieuDe,noiDung,backgroundColor) =>{
     if(Platform.OS ==='web'){
       //trên web dùng "window.alert"
-      window.alert(tieuDe + ": "+ noiDung);
-    }
-    else{
+      //window.alert(tieuDe + ": "+ noiDung);
+
+      // biến color thành màu nền của thông báo lỗi
+      const color = backgroundColor || 'red'; //mặc định là màu đỏ nếu không có màu nào được truyền vào
+      //tạo một phần tử div để hiển thị thông báo lỗi
+      const errorDiv = document.createElement('div');
+      errorDiv.style.position = 'fixed';
+      errorDiv.style.top = '20px';
+      errorDiv.style.left = '50%';
+      errorDiv.style.transform = 'translateX(-50%)';
+      errorDiv.style.backgroundColor = color;
+      errorDiv.style.color = 'White';
+      errorDiv.style.padding = '10px 20px';
+      errorDiv.style.borderRadius = '5px';
+      errorDiv.style.zIndex = 9999;
+      errorDiv.textContent = `${tieuDe}: ${noiDung}`;
+      document.body.appendChild(errorDiv);
+      // Tự động ẩn thông báo sau 3 giây
+      setTimeout(() => {
+        document.body.removeChild(errorDiv);
+      }, 3000);
+    }else{
       //trên điện thoại dùng "Alert.alert"
-      Alert.alert(tieuDe,noiDung);
+      Alert.alert(tieuDe, noiDung);
     }
   }
+  //login nhập liệu khi người dùng ấn nút "Đăng nhập"
   const xuLyNhapLieu =() =>{
     //bỏ qua khoảng trắng space
     const phone=phone_number.trim();
     const pass =password.trim();
     if(!phone){
-      hienThiThongBao("Lỗi","Vui lòng nhấp số điện thoại");
+      hienThiThongBao("Lỗi","Vui lòng nhấp số điện thoại","");
       return;
     }
     //SĐT của Việt nam yêu cầu 10 chữ số
     if(phone.length <10){
-      hienThiThongBao("Lỗi","Số điện thoại không hợp lệ (cần ít nhất 10 chứ số)");
+      hienThiThongBao("Lỗi","Số điện thoại không hợp lệ (cần ít nhất 10 chứ số)","");
+      return;
+    }
+    //số điện thoại bắt đầu từ 0
+    if(!phone.startsWith('0')){
+      hienThiThongBao("Lỗi","Số điện thoại phải bắt đầu bằng số 0","");
       return;
     }
     if(!pass){
-      hienThiThongBao("Lỗi","Vui lòng nhập mật khẩu");
+      hienThiThongBao("Lỗi","Vui lòng nhập mật khẩu","");
       return;
     }
+    
     //Mật khẩu cần ít nhất 6 ký tự
     if(pass.length <6){
-      hienThiThongBao("Lỗi","Mật khẩu phải có ít nhất 6 ký tự");
+      hienThiThongBao("Lỗi","Mật khẩu phải có ít nhất 6 ký tự","");
       return;
     }
     //nếu qua hết các bước trên:
-    hienThiThongBao("Thành công","Đăng nhập thành công");
+    hienThiThongBao("Thành công","Đăng nhập thành công","green");
   };
   return(
       <ScrollView style={styles.container}
@@ -47,7 +78,13 @@ export default function App() {
           style={styles.input}
           placeholder="Số điện thoại"
           value={phone_number}
-          onChangeText={setPhoneNumber}
+          //onChangeText={setPhoneNumber}
+          onChangeText={(text)=>{
+            //chỉ nhập số, bỏ qua các ký tự không phải số
+            // xóa hết các ký tự không phải số bằng NULL / gán chuỗi rỗng
+            const numericText = text.replace(/[^0-9]/g, '');
+            setPhoneNumber(numericText);
+          }}
           keyboardType="numeric" //bàn phím số
         />
         <TextInput
@@ -57,6 +94,7 @@ export default function App() {
           value={password}
           onChangeText={setPassword}
         />
+        {errorMessage ? <Text style={{color:'red', marginBottom:10,textAlign:'center'}}>{errorMessage}</Text> : null}
         <View style={styles.btnContainer}>
           <Button title="Đăng nhập" onPress={xuLyNhapLieu}/>
         </View>
